@@ -1,12 +1,15 @@
 const express = require('express');
-const fs = require('fs').promises;
 const path = require('path');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const mongoose = require('mongoose');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// MongoDB connection string from environment variable
+const MONGODB_URI = process.env.MONGODB_URI;
 
 // Allowed origins for CORS (your GitHub Pages + localhost for dev)
 const ALLOWED_ORIGINS = [
@@ -16,18 +19,38 @@ const ALLOWED_ORIGINS = [
     'http://127.0.0.1:5500'
 ];
 
+// --- Mongoose Models ---
+
+const customerSchema = new mongoose.Schema({
+    name:        { type: String, required: true },
+    email:       { type: String, required: true },
+    style:       { type: String, required: true },
+    budget:      { type: String, required: true },
+    submittedAt: { type: Date, default: Date.now }
+});
+
+const merchantSchema = new mongoose.Schema({
+    businessName: { type: String, required: true },
+    contactName:  { type: String, required: true },
+    email:        { type: String, required: true },
+    category:     { type: String, required: true },
+    submittedAt:  { type: Date, default: Date.now }
+});
+
+const Customer = mongoose.model('Customer', customerSchema);
+const Merchant = mongoose.model('Merchant', merchantSchema);
+
 // --- Middleware ---
 
 // Security headers
 app.use(helmet({
     crossOriginResourcePolicy: { policy: 'cross-origin' },
-    contentSecurityPolicy: false // disable CSP for static files served from this server
+    contentSecurityPolicy: false
 }));
 
 // CORS - restrict to known origins
 app.use(cors({
     origin: function (origin, callback) {
-        // Allow requests with no origin (like mobile apps, curl, server-to-server)
         if (!origin) return callback(null, true);
         if (ALLOWED_ORIGINS.includes(origin)) {
             return callback(null, true);
@@ -38,7 +61,7 @@ app.use(cors({
     allowedHeaders: ['Content-Type']
 }));
 
-// Body parsing with size limit (prevent large payload attacks)
+// Body parsing with size limit
 app.use(express.json({ limit: '10kb' }));
 
 // Rate limiting - general: 100 requests per 15 min per IP
@@ -63,61 +86,14 @@ const submitLimiter = rateLimit({
 // Serve static files
 app.use(express.static('public'));
 
-// --- Data Layer ---
-
-const DATA_DIR = path.join(__dirname, 'data');
-
-async function ensureDataDir() {
-    try {
-        await fs.access(DATA_DIR);
-    } catch {
-        await fs.mkdir(DATA_DIR, { recursive: true });
-    }
-}
-
-async function initializeDataFiles() {
-    await ensureDataDir();
-    const files = ['customers.json', 'merchants.json'];
-    for (const file of files) {
-        const filePath = path.join(DATA_DIR, file);
-        try {
-            await fs.access(filePath);
-        } catch {
-            await fs.writeFile(filePath, JSON.stringify([], null, 2));
-        }
-    }
-}
-
-async function readData(filename) {
-    try {
-        const filePath = path.join(DATA_DIR, filename);
-        const data = await fs.readFile(filePath, 'utf8');
-        return JSON.parse(data);
-    } catch (error) {
-        console.error(`Error reading ${filename}:`, error.message);
-        return [];
-    }
-}
-
-async function writeData(filename, data) {
-    try {
-        const filePath = path.join(DATA_DIR, filename);
-        await fs.writeFile(filePath, JSON.stringify(data, null, 2));
-        return true;
-    } catch (error) {
-        console.error(`Error writing to ${filename}:`, error.message);
-        return false;
-    }
-}
-
 // --- Validation Helpers ---
 
 function sanitizeString(str) {
     if (typeof str !== 'string') return '';
     return str
         .trim()
-        .replace(/[<>]/g, '') // strip angle brackets to prevent HTML injection
-        .slice(0, 200);       // cap length
+        .replace(/[<>]/g, '')
+        .slice(0, 200);
 }
 
 function isValidEmail(email) {
@@ -153,68 +129,64 @@ app.post('/api/submit', submitLimiter, async (req, res) => {
     try {
         const formData = req.body;
 
-        // Validate form type
         if (!formData.type || !['customer', 'merchant'].includes(formData.type)) {
             return res.status(400).json({ error: 'Invalid form type' });
         }
 
-        // Validate and sanitize based on type
-        let sanitizedData;
         if (formData.type === 'customer') {
             const errors = validateCustomer(formData);
             if (errors.length > 0) {
                 return res.status(400).json({ error: 'Validation failed', details: errors });
             }
-            sanitizedData = {
-                id: Date.now().toString(),
-                type: 'customer',
+
+            const email = sanitizeString(formData.email).toLowerCase();
+            const duplicate = await Customer.findOne({ email });
+            if (duplicate) {
+                return res.status(409).json({
+                    error: 'This email has already been registered.',
+                    message: 'You have already signed up with this email address.'
+                });
+            }
+
+            const customer = await Customer.create({
                 name: sanitizeString(formData.name),
-                email: sanitizeString(formData.email).toLowerCase(),
+                email: email,
                 style: formData.style,
-                budget: formData.budget,
-                submittedAt: new Date().toISOString()
-            };
+                budget: formData.budget
+            });
+
+            res.status(201).json({
+                success: true,
+                message: 'Form submitted successfully',
+                id: customer._id
+            });
         } else {
             const errors = validateMerchant(formData);
             if (errors.length > 0) {
                 return res.status(400).json({ error: 'Validation failed', details: errors });
             }
-            sanitizedData = {
-                id: Date.now().toString(),
-                type: 'merchant',
+
+            const email = sanitizeString(formData.email).toLowerCase();
+            const duplicate = await Merchant.findOne({ email });
+            if (duplicate) {
+                return res.status(409).json({
+                    error: 'This email has already been registered.',
+                    message: 'You have already signed up with this email address.'
+                });
+            }
+
+            const merchant = await Merchant.create({
                 businessName: sanitizeString(formData.businessName),
                 contactName: sanitizeString(formData.contactName),
-                email: sanitizeString(formData.email).toLowerCase(),
-                category: formData.category,
-                submittedAt: new Date().toISOString()
-            };
-        }
-
-        // Check for duplicate email in same collection
-        const filename = formData.type === 'customer' ? 'customers.json' : 'merchants.json';
-        const existingData = await readData(filename);
-
-        const duplicate = existingData.find(
-            entry => entry.email === sanitizedData.email
-        );
-        if (duplicate) {
-            return res.status(409).json({
-                error: 'This email has already been registered.',
-                message: 'You have already signed up with this email address.'
+                email: email,
+                category: formData.category
             });
-        }
 
-        existingData.push(sanitizedData);
-
-        const success = await writeData(filename, existingData);
-        if (success) {
             res.status(201).json({
                 success: true,
                 message: 'Form submitted successfully',
-                id: sanitizedData.id
+                id: merchant._id
             });
-        } else {
-            res.status(500).json({ error: 'Failed to save data' });
         }
     } catch (error) {
         console.error('Error processing submission:', error.message);
@@ -225,7 +197,7 @@ app.post('/api/submit', submitLimiter, async (req, res) => {
 // Get all customers
 app.get('/api/customers', async (req, res) => {
     try {
-        const customers = await readData('customers.json');
+        const customers = await Customer.find().sort({ submittedAt: -1 }).lean();
         res.json(customers);
     } catch (error) {
         console.error('Error fetching customers:', error.message);
@@ -236,7 +208,7 @@ app.get('/api/customers', async (req, res) => {
 // Get all merchants
 app.get('/api/merchants', async (req, res) => {
     try {
-        const merchants = await readData('merchants.json');
+        const merchants = await Merchant.find().sort({ submittedAt: -1 }).lean();
         res.json(merchants);
     } catch (error) {
         console.error('Error fetching merchants:', error.message);
@@ -248,6 +220,7 @@ app.get('/api/merchants', async (req, res) => {
 app.get('/api/health', (req, res) => {
     res.json({
         status: 'ok',
+        db: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
         timestamp: new Date().toISOString(),
         uptime: process.uptime()
     });
@@ -269,7 +242,13 @@ app.use((err, req, res, next) => {
 
 // --- Start ---
 async function startServer() {
-    await initializeDataFiles();
+    if (!MONGODB_URI) {
+        console.error('MONGODB_URI environment variable is not set.');
+        process.exit(1);
+    }
+
+    await mongoose.connect(MONGODB_URI);
+    console.log('Connected to MongoDB Atlas');
 
     app.listen(PORT, () => {
         console.log(`
@@ -277,7 +256,7 @@ async function startServer() {
   ───────────────────────
   Port:   ${PORT}
   Status: Ready
-  Data:   ./data
+  DB:     MongoDB Atlas
 
   Endpoints:
     POST /api/submit      (rate limited: 5/15min)
