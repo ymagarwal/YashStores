@@ -18,8 +18,10 @@ const GMAIL_USER = process.env.GMAIL_USER;
 const GMAIL_APP_PASSWORD = process.env.GMAIL_APP_PASSWORD;
 const NOTIFICATION_EMAIL = 'inquiries.snapshop@gmail.com';
 
-// Allowed origins for CORS (your GitHub Pages + localhost for dev)
+// Allowed origins for CORS (custom domain + GitHub Pages + localhost for dev)
 const ALLOWED_ORIGINS = [
+    'https://snapshop4u.com',
+    'https://www.snapshop4u.com',
     'https://ymagarwal.github.io',
     'http://localhost:3000',
     'http://localhost:5500',
