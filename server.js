@@ -107,9 +107,9 @@ function isValidEmail(email) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-const VALID_STYLES = ['minimalist', 'vintage', 'streetwear', 'formal', 'casual'];
+const VALID_STYLES = ['minimalist', 'vintage', 'streetwear', 'formal', 'casual', 'other'];
 const VALID_BUDGETS = ['0-100', '100-250', '250-500', '500+'];
-const VALID_CATEGORIES = ['clothing', 'accessories', 'footwear', 'jewelry'];
+const VALID_CATEGORIES = ['clothing', 'accessories', 'footwear', 'jewelry', 'other'];
 
 function validateCustomer(data) {
     const errors = [];

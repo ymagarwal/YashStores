@@ -313,18 +313,7 @@
         .card-image {
             width: 100%;
             height: 75%;
-        }
-        
-        .visual-card:nth-child(1) .card-image {
-            background: linear-gradient(180deg, var(--soft-sage) 0%, var(--soft-mint) 100%);
-        }
-        
-        .visual-card:nth-child(2) .card-image {
-            background: linear-gradient(180deg, var(--soft-blush) 0%, var(--soft-lavender) 100%);
-        }
-        
-        .visual-card:nth-child(3) .card-image {
-            background: linear-gradient(180deg, var(--soft-cream) 0%, var(--soft-sage) 100%);
+            object-fit: cover;
         }
         
         .card-content {
@@ -959,7 +948,7 @@
             
             <div class="hero-visual">
                 <div class="visual-card">
-                    <div class="card-image"></div>
+                    <img src="images/coat-black.jpeg" alt="Wool Overcoat" class="card-image">
                     <div class="card-content">
                         <div class="card-title">Wool Overcoat</div>
                         <div class="card-subtitle">London Tailors</div>
@@ -970,7 +959,7 @@
                     </div>
                 </div>
                 <div class="visual-card">
-                    <div class="card-image"></div>
+                    <img src="images/dress-silk.jpeg" alt="Silk Midi Dress" class="card-image">
                     <div class="card-content">
                         <div class="card-title">Silk Midi Dress</div>
                         <div class="card-subtitle">Elegant Threads</div>
@@ -981,7 +970,7 @@
                     </div>
                 </div>
                 <div class="visual-card">
-                    <div class="card-image"></div>
+                    <img src="images/bag-leather.jpeg" alt="Leather Tote" class="card-image">
                     <div class="card-content">
                         <div class="card-title">Leather Tote</div>
                         <div class="card-subtitle">Craft & Co</div>
@@ -1193,6 +1182,7 @@
                             <option value="streetwear">Streetwear</option>
                             <option value="formal">Formal</option>
                             <option value="casual">Casual</option>
+                            <option value="other">Other</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -1235,6 +1225,7 @@
                             <option value="accessories">Accessories</option>
                             <option value="footwear">Footwear</option>
                             <option value="jewelry">Jewelry</option>
+                            <option value="other">Other</option>
                         </select>
                     </div>
                     <button type="submit" class="submit-btn">Apply to Sell</button>
