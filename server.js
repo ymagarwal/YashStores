@@ -4,12 +4,19 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const mongoose = require('mongoose');
+const nodemailer = require('nodemailer');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // MongoDB connection string from environment variable
 const MONGODB_URI = process.env.MONGODB_URI;
+
+// Admin & email config from environment variables
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+const GMAIL_USER = process.env.GMAIL_USER;
+const GMAIL_APP_PASSWORD = process.env.GMAIL_APP_PASSWORD;
+const NOTIFICATION_EMAIL = 'inquiries.snapshop@gmail.com';
 
 // Allowed origins for CORS (your GitHub Pages + localhost for dev)
 const ALLOWED_ORIGINS = [
@@ -57,8 +64,8 @@ app.use(cors({
         }
         return callback(new Error('Not allowed by CORS'));
     },
-    methods: ['GET', 'POST'],
-    allowedHeaders: ['Content-Type']
+    methods: ['GET', 'POST', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // Body parsing with size limit
@@ -122,6 +129,67 @@ function validateMerchant(data) {
     return errors;
 }
 
+// --- Email Notifications ---
+
+let transporter = null;
+if (GMAIL_USER && GMAIL_APP_PASSWORD) {
+    transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: GMAIL_USER,
+            pass: GMAIL_APP_PASSWORD
+        }
+    });
+}
+
+async function sendNotificationEmail(type, data) {
+    if (!transporter) return;
+
+    const subject = type === 'customer'
+        ? `New Customer Signup: ${data.name}`
+        : `New Merchant Application: ${data.businessName}`;
+
+    const html = type === 'customer'
+        ? `<div style="font-family:Arial,sans-serif;max-width:500px;">
+             <h2 style="color:#1A1A1A;">New Customer Signup</h2>
+             <p><strong>Name:</strong> ${data.name}</p>
+             <p><strong>Email:</strong> ${data.email}</p>
+             <p><strong>Style:</strong> ${data.style}</p>
+             <p><strong>Budget:</strong> &pound;${data.budget}</p>
+             <hr><p style="color:#999;font-size:12px;">SnapShop Notification</p>
+           </div>`
+        : `<div style="font-family:Arial,sans-serif;max-width:500px;">
+             <h2 style="color:#1A1A1A;">New Merchant Application</h2>
+             <p><strong>Business:</strong> ${data.businessName}</p>
+             <p><strong>Contact:</strong> ${data.contactName}</p>
+             <p><strong>Email:</strong> ${data.email}</p>
+             <p><strong>Category:</strong> ${data.category}</p>
+             <hr><p style="color:#999;font-size:12px;">SnapShop Notification</p>
+           </div>`;
+
+    try {
+        await transporter.sendMail({
+            from: `"SnapShop" <${GMAIL_USER}>`,
+            to: NOTIFICATION_EMAIL,
+            subject,
+            html
+        });
+        console.log(`Notification email sent for new ${type}`);
+    } catch (err) {
+        console.error('Failed to send notification email:', err.message);
+    }
+}
+
+// --- Admin Authentication Middleware ---
+
+function requireAdmin(req, res, next) {
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    if (!ADMIN_PASSWORD || token !== ADMIN_PASSWORD) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+    next();
+}
+
 // --- API Routes ---
 
 // Submit form data (with stricter rate limit)
@@ -155,6 +223,9 @@ app.post('/api/submit', submitLimiter, async (req, res) => {
                 budget: formData.budget
             });
 
+            // Send notification email (non-blocking)
+            sendNotificationEmail('customer', customer).catch(() => {});
+
             res.status(201).json({
                 success: true,
                 message: 'Form submitted successfully',
@@ -182,6 +253,9 @@ app.post('/api/submit', submitLimiter, async (req, res) => {
                 category: formData.category
             });
 
+            // Send notification email (non-blocking)
+            sendNotificationEmail('merchant', merchant).catch(() => {});
+
             res.status(201).json({
                 success: true,
                 message: 'Form submitted successfully',
@@ -194,8 +268,17 @@ app.post('/api/submit', submitLimiter, async (req, res) => {
     }
 });
 
-// Get all customers
-app.get('/api/customers', async (req, res) => {
+// Admin login - verify password
+app.post('/api/admin/login', (req, res) => {
+    const { password } = req.body;
+    if (!ADMIN_PASSWORD || password !== ADMIN_PASSWORD) {
+        return res.status(401).json({ error: 'Invalid password' });
+    }
+    res.json({ success: true });
+});
+
+// Get all customers (admin only)
+app.get('/api/customers', requireAdmin, async (req, res) => {
     try {
         const customers = await Customer.find().sort({ submittedAt: -1 }).lean();
         res.json(customers);
@@ -205,14 +288,38 @@ app.get('/api/customers', async (req, res) => {
     }
 });
 
-// Get all merchants
-app.get('/api/merchants', async (req, res) => {
+// Get all merchants (admin only)
+app.get('/api/merchants', requireAdmin, async (req, res) => {
     try {
         const merchants = await Merchant.find().sort({ submittedAt: -1 }).lean();
         res.json(merchants);
     } catch (error) {
         console.error('Error fetching merchants:', error.message);
         res.status(500).json({ error: 'Failed to fetch merchants' });
+    }
+});
+
+// Delete a customer (admin only)
+app.delete('/api/customers/:id', requireAdmin, async (req, res) => {
+    try {
+        const result = await Customer.findByIdAndDelete(req.params.id);
+        if (!result) return res.status(404).json({ error: 'Customer not found' });
+        res.json({ success: true, message: 'Customer deleted' });
+    } catch (error) {
+        console.error('Error deleting customer:', error.message);
+        res.status(500).json({ error: 'Failed to delete customer' });
+    }
+});
+
+// Delete a merchant (admin only)
+app.delete('/api/merchants/:id', requireAdmin, async (req, res) => {
+    try {
+        const result = await Merchant.findByIdAndDelete(req.params.id);
+        if (!result) return res.status(404).json({ error: 'Merchant not found' });
+        res.json({ success: true, message: 'Merchant deleted' });
+    } catch (error) {
+        console.error('Error deleting merchant:', error.message);
+        res.status(500).json({ error: 'Failed to delete merchant' });
     }
 });
 
@@ -258,11 +365,16 @@ async function startServer() {
   Status: Ready
   DB:     MongoDB Atlas
 
+  Email:  ${transporter ? NOTIFICATION_EMAIL : 'Not configured'}
+
   Endpoints:
-    POST /api/submit      (rate limited: 5/15min)
-    GET  /api/customers
-    GET  /api/merchants
-    GET  /api/health
+    POST   /api/submit         (rate limited: 5/15min)
+    POST   /api/admin/login    (admin auth)
+    GET    /api/customers      (admin only)
+    GET    /api/merchants      (admin only)
+    DELETE /api/customers/:id  (admin only)
+    DELETE /api/merchants/:id  (admin only)
+    GET    /api/health
         `);
     });
 }

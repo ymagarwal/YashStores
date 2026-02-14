@@ -3,82 +3,201 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SnapShop Admin - View Submissions</title>
+    <title>SnapShop Admin - Dashboard</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
+
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Inter', sans-serif;
             background: #FAFAFA;
             color: #2A2A2A;
-            padding: 2rem;
         }
-        
+
+        /* --- Login Screen --- */
+
+        .login-overlay {
+            position: fixed;
+            inset: 0;
+            background: #FAFAFA;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .login-overlay.hidden {
+            display: none;
+        }
+
+        .login-box {
+            background: white;
+            padding: 3rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .login-box h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .login-box p {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+        }
+
+        .login-box input {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            border: 1px solid #E8E8E8;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            margin-bottom: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .login-box input:focus {
+            border-color: #1A1A1A;
+        }
+
+        .login-error {
+            color: #C62828;
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        /* --- Dashboard --- */
+
+        .dashboard {
+            padding: 2rem;
+            display: none;
+        }
+
+        .dashboard.visible {
+            display: block;
+        }
+
         .container {
             max-width: 1400px;
             margin: 0 auto;
         }
-        
+
         header {
             background: white;
-            padding: 2rem;
+            padding: 1.5rem 2rem;
             border-radius: 8px;
             margin-bottom: 2rem;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        
+
         h1 {
-            font-size: 2rem;
+            font-size: 1.75rem;
             font-weight: 600;
-            margin-bottom: 0.5rem;
         }
-        
+
         .subtitle {
             color: #666;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
+            margin-top: 0.25rem;
         }
-        
+
+        .header-actions {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
         .stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 1rem;
             margin-bottom: 2rem;
         }
-        
+
         .stat-card {
             background: white;
             padding: 1.5rem;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
-        
+
         .stat-number {
             font-size: 2.5rem;
             font-weight: 700;
             color: #1A1A1A;
         }
-        
+
         .stat-label {
             color: #666;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             margin-top: 0.25rem;
         }
-        
+
+        .toolbar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 200px;
+            max-width: 400px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 0.7rem 1rem 0.7rem 2.5rem;
+            border: 1px solid #E8E8E8;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .search-box input:focus {
+            border-color: #1A1A1A;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 0.8rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+            font-size: 0.9rem;
+        }
+
         .tabs {
             display: flex;
             gap: 0.5rem;
             margin-bottom: 1.5rem;
             border-bottom: 2px solid #E8E8E8;
         }
-        
+
         .tab {
             padding: 0.75rem 1.5rem;
             background: transparent;
@@ -91,228 +210,429 @@
             margin-bottom: -2px;
             transition: all 0.3s ease;
         }
-        
+
         .tab:hover {
             color: #1A1A1A;
         }
-        
+
         .tab.active {
             color: #1A1A1A;
             border-bottom-color: #1A1A1A;
         }
-        
+
         .section {
             display: none;
         }
-        
+
         .section.active {
             display: block;
         }
-        
+
         .table-container {
             background: white;
             border-radius: 8px;
             overflow: hidden;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
-        
+
         table {
             width: 100%;
             border-collapse: collapse;
         }
-        
+
         thead {
             background: #F5F5F5;
         }
-        
+
         th {
             text-align: left;
             padding: 1rem;
             font-weight: 600;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             color: #666;
         }
-        
+
         td {
-            padding: 1rem;
+            padding: 0.85rem 1rem;
             border-top: 1px solid #F0F0F0;
         }
-        
+
         tr:hover {
             background: #FAFAFA;
         }
-        
+
         .badge {
             display: inline-block;
-            padding: 0.25rem 0.75rem;
+            padding: 0.2rem 0.6rem;
             background: #E8F5E9;
             color: #2E7D32;
             border-radius: 12px;
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             font-weight: 500;
         }
-        
+
         .empty-state {
             text-align: center;
             padding: 4rem 2rem;
             color: #999;
         }
-        
-        .empty-state-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
+
+        .empty-state h3 {
+            margin-top: 0.5rem;
         }
-        
+
         .loading {
             text-align: center;
             padding: 3rem;
             color: #666;
         }
-        
+
         .spinner {
             border: 3px solid #f3f3f3;
             border-top: 3px solid #1A1A1A;
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
+            width: 36px;
+            height: 36px;
             animation: spin 1s linear infinite;
             margin: 0 auto 1rem;
         }
-        
+
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        
-        .actions {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-        
+
         .btn {
-            padding: 0.75rem 1.5rem;
+            padding: 0.65rem 1.25rem;
             background: #1A1A1A;
             color: white;
             border: none;
-            border-radius: 4px;
+            border-radius: 6px;
             cursor: pointer;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             font-weight: 500;
-            transition: all 0.3s ease;
+            font-family: inherit;
+            transition: all 0.2s ease;
+            white-space: nowrap;
         }
-        
+
         .btn:hover {
-            background: #2A2A2A;
+            background: #333;
         }
-        
+
         .btn-secondary {
             background: white;
             color: #1A1A1A;
             border: 1px solid #E8E8E8;
         }
-        
+
         .btn-secondary:hover {
             background: #F5F5F5;
         }
-        
+
+        .btn-danger {
+            background: transparent;
+            color: #C62828;
+            border: 1px solid #FFCDD2;
+            padding: 0.4rem 0.8rem;
+            font-size: 0.78rem;
+        }
+
+        .btn-danger:hover {
+            background: #FFEBEE;
+        }
+
+        .btn-logout {
+            background: transparent;
+            color: #666;
+            border: 1px solid #E8E8E8;
+            font-size: 0.8rem;
+            padding: 0.5rem 1rem;
+        }
+
+        .btn-logout:hover {
+            background: #F5F5F5;
+            color: #C62828;
+        }
+
         .timestamp {
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             color: #999;
         }
-        
+
         .error {
             background: #FFEBEE;
             color: #C62828;
             padding: 1rem;
-            border-radius: 4px;
+            border-radius: 6px;
             margin-bottom: 1rem;
+            font-size: 0.9rem;
         }
-        
+
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: #1A1A1A;
+            color: white;
+            padding: 0.85rem 1.5rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 999;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast.error {
+            background: #C62828;
+        }
+
+        .confirm-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 500;
+        }
+
+        .confirm-overlay.hidden {
+            display: none;
+        }
+
+        .confirm-box {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .confirm-box h3 {
+            margin-bottom: 0.5rem;
+        }
+
+        .confirm-box p {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .confirm-actions {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: center;
+        }
+
         @media (max-width: 768px) {
-            body {
+            .dashboard {
                 padding: 1rem;
             }
-            
+
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
             .table-container {
                 overflow-x: auto;
             }
-            
+
             table {
                 font-size: 0.85rem;
             }
-            
+
             th, td {
-                padding: 0.75rem 0.5rem;
+                padding: 0.6rem 0.5rem;
+            }
+
+            .toolbar {
+                flex-direction: column;
+            }
+
+            .search-box {
+                max-width: 100%;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>SnapShop Admin Dashboard</h1>
-            <p class="subtitle">View all customer and merchant submissions</p>
-        </header>
-        
-        <div class="stats">
-            <div class="stat-card">
-                <div class="stat-number" id="total-customers">-</div>
-                <div class="stat-label">Total Customers</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="total-merchants">-</div>
-                <div class="stat-label">Total Merchants</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="total-submissions">-</div>
-                <div class="stat-label">Total Submissions</div>
-            </div>
+
+    <!-- Login Screen -->
+    <div class="login-overlay" id="login-overlay">
+        <div class="login-box">
+            <h1>SnapShop Admin</h1>
+            <p>Enter your admin password to continue</p>
+            <div class="login-error" id="login-error">Invalid password. Please try again.</div>
+            <input type="password" id="login-password" placeholder="Admin password" autofocus>
+            <button class="btn" style="width:100%;" onclick="handleLogin()">Sign In</button>
         </div>
-        
-        <div class="actions">
-            <button class="btn" onclick="refreshData()">🔄 Refresh Data</button>
-            <button class="btn btn-secondary" onclick="exportToCSV('customers')">📥 Export Customers CSV</button>
-            <button class="btn btn-secondary" onclick="exportToCSV('merchants')">📥 Export Merchants CSV</button>
-        </div>
-        
-        <div id="error-message"></div>
-        
-        <div class="tabs">
-            <button class="tab active" onclick="switchTab('customers')">Customers</button>
-            <button class="tab" onclick="switchTab('merchants')">Merchants</button>
-        </div>
-        
-        <div id="customers" class="section active">
-            <div class="table-container">
-                <div class="loading" id="customers-loading">
-                    <div class="spinner"></div>
-                    <p>Loading customers...</p>
-                </div>
-                <div id="customers-content" style="display: none;"></div>
-            </div>
-        </div>
-        
-        <div id="merchants" class="section">
-            <div class="table-container">
-                <div class="loading" id="merchants-loading">
-                    <div class="spinner"></div>
-                    <p>Loading merchants...</p>
-                </div>
-                <div id="merchants-content" style="display: none;"></div>
+    </div>
+
+    <!-- Confirm Delete Dialog -->
+    <div class="confirm-overlay hidden" id="confirm-overlay">
+        <div class="confirm-box">
+            <h3>Delete entry?</h3>
+            <p id="confirm-text">This action cannot be undone.</p>
+            <div class="confirm-actions">
+                <button class="btn btn-secondary" onclick="closeConfirm()">Cancel</button>
+                <button class="btn" style="background:#C62828;" id="confirm-delete-btn">Delete</button>
             </div>
         </div>
     </div>
-    
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Dashboard -->
+    <div class="dashboard" id="dashboard">
+        <div class="container">
+            <header>
+                <div>
+                    <h1>SnapShop Admin</h1>
+                    <p class="subtitle">Manage customer and merchant submissions</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-secondary" onclick="refreshData()">Refresh</button>
+                    <button class="btn btn-logout" onclick="handleLogout()">Sign Out</button>
+                </div>
+            </header>
+
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="total-customers">-</div>
+                    <div class="stat-label">Customers</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="total-merchants">-</div>
+                    <div class="stat-label">Merchants</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="total-submissions">-</div>
+                    <div class="stat-label">Total Submissions</div>
+                </div>
+            </div>
+
+            <div id="error-message"></div>
+
+            <div class="toolbar">
+                <div class="search-box">
+                    <span class="search-icon">&#128269;</span>
+                    <input type="text" id="search-input" placeholder="Search by name, email, or category..." oninput="handleSearch()">
+                </div>
+                <button class="btn btn-secondary" onclick="exportToCSV('customers')">Export Customers</button>
+                <button class="btn btn-secondary" onclick="exportToCSV('merchants')">Export Merchants</button>
+            </div>
+
+            <div class="tabs">
+                <button class="tab active" data-tab="customers" onclick="switchTab('customers', this)">Customers</button>
+                <button class="tab" data-tab="merchants" onclick="switchTab('merchants', this)">Merchants</button>
+            </div>
+
+            <div id="customers" class="section active">
+                <div class="table-container">
+                    <div class="loading" id="customers-loading">
+                        <div class="spinner"></div>
+                        <p>Loading customers...</p>
+                    </div>
+                    <div id="customers-content" style="display: none;"></div>
+                </div>
+            </div>
+
+            <div id="merchants" class="section">
+                <div class="table-container">
+                    <div class="loading" id="merchants-loading">
+                        <div class="spinner"></div>
+                        <p>Loading merchants...</p>
+                    </div>
+                    <div id="merchants-content" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         const API_BASE = 'https://yashstores.onrender.com/api';
 
         let customersData = [];
         let merchantsData = [];
+        let currentTab = 'customers';
+        let pendingDeleteId = null;
+        let pendingDeleteType = null;
 
-        // Escape HTML to prevent XSS from user-submitted data
+        // --- Auth helpers ---
+
+        function getToken() {
+            return sessionStorage.getItem('admin_token');
+        }
+
+        function authHeaders() {
+            return {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + getToken()
+            };
+        }
+
+        // --- Login ---
+
+        async function handleLogin() {
+            const password = document.getElementById('login-password').value;
+            if (!password) return;
+
+            try {
+                const res = await fetch(`${API_BASE}/admin/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password })
+                });
+
+                if (!res.ok) {
+                    document.getElementById('login-error').style.display = 'block';
+                    return;
+                }
+
+                sessionStorage.setItem('admin_token', password);
+                document.getElementById('login-overlay').classList.add('hidden');
+                document.getElementById('dashboard').classList.add('visible');
+                refreshData();
+            } catch (err) {
+                document.getElementById('login-error').style.display = 'block';
+            }
+        }
+
+        // Enter key on password field
+        document.getElementById('login-password').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') handleLogin();
+        });
+
+        function handleLogout() {
+            sessionStorage.removeItem('admin_token');
+            location.reload();
+        }
+
+        // Auto-login if token exists
+        (function checkSession() {
+            if (getToken()) {
+                document.getElementById('login-overlay').classList.add('hidden');
+                document.getElementById('dashboard').classList.add('visible');
+                refreshData();
+            }
+        })();
+
+        // --- Helpers ---
+
         function escapeHTML(str) {
             if (!str) return 'N/A';
             const div = document.createElement('div');
@@ -320,221 +640,273 @@
             return div.innerHTML;
         }
 
-        // Format date
         function formatDate(dateString) {
             const date = new Date(dateString);
-            return date.toLocaleString('en-US', {
-                year: 'numeric',
-                month: 'short',
+            return date.toLocaleString('en-GB', {
                 day: 'numeric',
+                month: 'short',
+                year: 'numeric',
                 hour: '2-digit',
                 minute: '2-digit'
             });
         }
-        
-        // Switch tabs
-        function switchTab(tab) {
-            // Update tab buttons
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            event.target.classList.add('active');
-            
-            // Update sections
-            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            document.getElementById(tab).classList.add('active');
+
+        function showToast(message, isError) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast show' + (isError ? ' error' : '');
+            setTimeout(() => { toast.className = 'toast'; }, 3000);
         }
-        
-        // Show error
+
         function showError(message) {
             const errorDiv = document.getElementById('error-message');
-            const errorBox = document.createElement('div');
-            errorBox.className = 'error';
-            errorBox.textContent = message;
-            errorDiv.innerHTML = '';
-            errorDiv.appendChild(errorBox);
-            setTimeout(() => {
-                errorDiv.innerHTML = '';
-            }, 5000);
+            errorDiv.innerHTML = `<div class="error">${escapeHTML(message)}</div>`;
+            setTimeout(() => { errorDiv.innerHTML = ''; }, 5000);
         }
-        
-        // Load customers
+
+        // --- Tabs ---
+
+        function switchTab(tab, btn) {
+            currentTab = tab;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            btn.classList.add('active');
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(tab).classList.add('active');
+            handleSearch(); // re-apply search filter
+        }
+
+        // --- Search ---
+
+        function handleSearch() {
+            const query = document.getElementById('search-input').value.toLowerCase().trim();
+            if (currentTab === 'customers') {
+                renderCustomers(query);
+            } else {
+                renderMerchants(query);
+            }
+        }
+
+        // --- Render Tables ---
+
+        function renderCustomers(query) {
+            const content = document.getElementById('customers-content');
+            let data = customersData;
+
+            if (query) {
+                data = data.filter(c =>
+                    (c.name || '').toLowerCase().includes(query) ||
+                    (c.email || '').toLowerCase().includes(query) ||
+                    (c.style || '').toLowerCase().includes(query) ||
+                    (c.budget || '').toLowerCase().includes(query)
+                );
+            }
+
+            if (data.length === 0) {
+                content.innerHTML = `
+                    <div class="empty-state">
+                        <h3>${query ? 'No matching customers' : 'No customers yet'}</h3>
+                        <p>${query ? 'Try a different search term' : 'Customer submissions will appear here'}</p>
+                    </div>`;
+                return;
+            }
+
+            content.innerHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Style</th>
+                            <th>Budget</th>
+                            <th>Submitted</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${data.map(c => `
+                            <tr>
+                                <td><strong>${escapeHTML(c.name)}</strong></td>
+                                <td>${escapeHTML(c.email)}</td>
+                                <td><span class="badge">${escapeHTML(c.style)}</span></td>
+                                <td>&pound;${escapeHTML(c.budget)}</td>
+                                <td class="timestamp">${formatDate(c.submittedAt)}</td>
+                                <td><button class="btn btn-danger" onclick="confirmDelete('customers','${c._id}','${escapeHTML(c.name)}')">Delete</button></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>`;
+        }
+
+        function renderMerchants(query) {
+            const content = document.getElementById('merchants-content');
+            let data = merchantsData;
+
+            if (query) {
+                data = data.filter(m =>
+                    (m.businessName || '').toLowerCase().includes(query) ||
+                    (m.contactName || '').toLowerCase().includes(query) ||
+                    (m.email || '').toLowerCase().includes(query) ||
+                    (m.category || '').toLowerCase().includes(query)
+                );
+            }
+
+            if (data.length === 0) {
+                content.innerHTML = `
+                    <div class="empty-state">
+                        <h3>${query ? 'No matching merchants' : 'No merchants yet'}</h3>
+                        <p>${query ? 'Try a different search term' : 'Merchant applications will appear here'}</p>
+                    </div>`;
+                return;
+            }
+
+            content.innerHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Business Name</th>
+                            <th>Contact</th>
+                            <th>Email</th>
+                            <th>Category</th>
+                            <th>Submitted</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${data.map(m => `
+                            <tr>
+                                <td><strong>${escapeHTML(m.businessName)}</strong></td>
+                                <td>${escapeHTML(m.contactName)}</td>
+                                <td>${escapeHTML(m.email)}</td>
+                                <td><span class="badge">${escapeHTML(m.category)}</span></td>
+                                <td class="timestamp">${formatDate(m.submittedAt)}</td>
+                                <td><button class="btn btn-danger" onclick="confirmDelete('merchants','${m._id}','${escapeHTML(m.businessName)}')">Delete</button></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>`;
+        }
+
+        // --- Delete ---
+
+        function confirmDelete(type, id, name) {
+            pendingDeleteType = type;
+            pendingDeleteId = id;
+            document.getElementById('confirm-text').textContent = `Delete "${name}"? This cannot be undone.`;
+            document.getElementById('confirm-overlay').classList.remove('hidden');
+            document.getElementById('confirm-delete-btn').onclick = executeDelete;
+        }
+
+        function closeConfirm() {
+            document.getElementById('confirm-overlay').classList.add('hidden');
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+        }
+
+        async function executeDelete() {
+            closeConfirm();
+            try {
+                const res = await fetch(`${API_BASE}/${pendingDeleteType}/${pendingDeleteId}`, {
+                    method: 'DELETE',
+                    headers: authHeaders()
+                });
+                if (!res.ok) throw new Error('Delete failed');
+                showToast('Entry deleted');
+                await refreshData();
+            } catch (err) {
+                showToast('Failed to delete entry', true);
+            }
+        }
+
+        // --- Load Data ---
+
         async function loadCustomers() {
             try {
-                const response = await fetch(`${API_BASE}/customers`);
-                if (!response.ok) throw new Error('Failed to load customers');
-                
-                customersData = await response.json();
-                
+                const res = await fetch(`${API_BASE}/customers`, { headers: authHeaders() });
+                if (res.status === 401) { handleLogout(); return; }
+                if (!res.ok) throw new Error('Failed to load');
+                customersData = await res.json();
+
                 document.getElementById('customers-loading').style.display = 'none';
-                const content = document.getElementById('customers-content');
-                content.style.display = 'block';
-                
-                if (customersData.length === 0) {
-                    content.innerHTML = `
-                        <div class="empty-state">
-                            <div class="empty-state-icon">📭</div>
-                            <h3>No customers yet</h3>
-                            <p>Customer submissions will appear here</p>
-                        </div>
-                    `;
-                } else {
-                    content.innerHTML = `
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Email</th>
-                                    <th>Style</th>
-                                    <th>Budget</th>
-                                    <th>Submitted</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${customersData.map(customer => `
-                                    <tr>
-                                        <td><strong>${escapeHTML(customer.name)}</strong></td>
-                                        <td>${escapeHTML(customer.email)}</td>
-                                        <td><span class="badge">${escapeHTML(customer.style)}</span></td>
-                                        <td>${escapeHTML(customer.budget)}</td>
-                                        <td class="timestamp">${formatDate(customer.submittedAt || customer.timestamp)}</td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    `;
-                }
-                
+                document.getElementById('customers-content').style.display = 'block';
                 document.getElementById('total-customers').textContent = customersData.length;
+                renderCustomers(document.getElementById('search-input').value.toLowerCase().trim());
             } catch (error) {
-                console.error('Error loading customers:', error);
                 document.getElementById('customers-loading').style.display = 'none';
+                document.getElementById('customers-content').style.display = 'block';
                 document.getElementById('customers-content').innerHTML = `
                     <div class="empty-state">
-                        <div class="empty-state-icon">⚠️</div>
                         <h3>Error loading customers</h3>
-                        <p>${error.message}</p>
-                    </div>
-                `;
+                        <p>${escapeHTML(error.message)}</p>
+                    </div>`;
                 showError('Failed to load customers');
             }
         }
-        
-        // Load merchants
+
         async function loadMerchants() {
             try {
-                const response = await fetch(`${API_BASE}/merchants`);
-                if (!response.ok) throw new Error('Failed to load merchants');
-                
-                merchantsData = await response.json();
-                
+                const res = await fetch(`${API_BASE}/merchants`, { headers: authHeaders() });
+                if (res.status === 401) { handleLogout(); return; }
+                if (!res.ok) throw new Error('Failed to load');
+                merchantsData = await res.json();
+
                 document.getElementById('merchants-loading').style.display = 'none';
-                const content = document.getElementById('merchants-content');
-                content.style.display = 'block';
-                
-                if (merchantsData.length === 0) {
-                    content.innerHTML = `
-                        <div class="empty-state">
-                            <div class="empty-state-icon">📭</div>
-                            <h3>No merchants yet</h3>
-                            <p>Merchant applications will appear here</p>
-                        </div>
-                    `;
-                } else {
-                    content.innerHTML = `
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Business Name</th>
-                                    <th>Contact Name</th>
-                                    <th>Email</th>
-                                    <th>Category</th>
-                                    <th>Submitted</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${merchantsData.map(merchant => `
-                                    <tr>
-                                        <td><strong>${escapeHTML(merchant.businessName)}</strong></td>
-                                        <td>${escapeHTML(merchant.contactName)}</td>
-                                        <td>${escapeHTML(merchant.email)}</td>
-                                        <td><span class="badge">${escapeHTML(merchant.category)}</span></td>
-                                        <td class="timestamp">${formatDate(merchant.submittedAt || merchant.timestamp)}</td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    `;
-                }
-                
+                document.getElementById('merchants-content').style.display = 'block';
                 document.getElementById('total-merchants').textContent = merchantsData.length;
+                renderMerchants(document.getElementById('search-input').value.toLowerCase().trim());
             } catch (error) {
-                console.error('Error loading merchants:', error);
                 document.getElementById('merchants-loading').style.display = 'none';
+                document.getElementById('merchants-content').style.display = 'block';
                 document.getElementById('merchants-content').innerHTML = `
                     <div class="empty-state">
-                        <div class="empty-state-icon">⚠️</div>
                         <h3>Error loading merchants</h3>
-                        <p>${error.message}</p>
-                    </div>
-                `;
+                        <p>${escapeHTML(error.message)}</p>
+                    </div>`;
                 showError('Failed to load merchants');
             }
         }
-        
-        // Update total stats
-        function updateStats() {
-            const total = customersData.length + merchantsData.length;
-            document.getElementById('total-submissions').textContent = total;
-        }
-        
-        // Refresh all data
+
         async function refreshData() {
             document.getElementById('customers-loading').style.display = 'block';
             document.getElementById('customers-content').style.display = 'none';
             document.getElementById('merchants-loading').style.display = 'block';
             document.getElementById('merchants-content').style.display = 'none';
-            
+
             await Promise.all([loadCustomers(), loadMerchants()]);
-            updateStats();
+            const total = customersData.length + merchantsData.length;
+            document.getElementById('total-submissions').textContent = total;
         }
-        
-        // Export to CSV
+
+        // --- CSV Export ---
+
         function exportToCSV(type) {
             const data = type === 'customers' ? customersData : merchantsData;
-            
             if (data.length === 0) {
-                alert(`No ${type} to export`);
+                showToast(`No ${type} to export`, true);
                 return;
             }
-            
-            // Get all unique keys
-            const keys = [...new Set(data.flatMap(Object.keys))];
-            
-            // Create CSV content
-            const csvContent = [
-                keys.join(','), // Header
-                ...data.map(item => 
-                    keys.map(key => {
-                        const value = item[key] || '';
-                        // Escape commas and quotes
-                        return `"${String(value).replace(/"/g, '""')}"`;
-                    }).join(',')
-                )
-            ].join('\n');
-            
-            // Download
-            const blob = new Blob([csvContent], { type: 'text/csv' });
+
+            const keys = type === 'customers'
+                ? ['name', 'email', 'style', 'budget', 'submittedAt']
+                : ['businessName', 'contactName', 'email', 'category', 'submittedAt'];
+
+            const header = keys.join(',');
+            const rows = data.map(item =>
+                keys.map(key => {
+                    const val = item[key] || '';
+                    return `"${String(val).replace(/"/g, '""')}"`;
+                }).join(',')
+            );
+
+            const csv = [header, ...rows].join('\n');
+            const blob = new Blob([csv], { type: 'text/csv' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
             a.download = `snapshop-${type}-${new Date().toISOString().split('T')[0]}.csv`;
             a.click();
             window.URL.revokeObjectURL(url);
+            showToast(`${type} exported`);
         }
-        
-        // Load data on page load
-        window.addEventListener('DOMContentLoaded', async () => {
-            await refreshData();
-        });
     </script>
 </body>
 </html>
