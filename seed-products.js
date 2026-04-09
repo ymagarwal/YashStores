@@ -84,7 +84,7 @@ const products = [
         category: "clothing",
         price: 135,
         merchant: "Tailored Elegance",
-        images: ["https://images.unsplash.com/photo-1594938298603-c8148c4b4357?w=600&q=80"],
+        images: ["https://images.unsplash.com/photo-1509631179647-0177331693ae?w=600&q=80"],
         tags: ["minimalist", "formal", "casual", "trousers", "grey", "wide-leg", "tailored"],
         stock: 14
     },
@@ -144,7 +144,7 @@ const products = [
         category: "clothing",
         price: 125,
         merchant: "Tailored Elegance",
-        images: ["https://images.unsplash.com/photo-1583496661160-fb5974ca0e2c?w=600&q=80"],
+        images: ["https://images.unsplash.com/photo-1577900232427-18219b9166a0?w=600&q=80"],
         tags: ["minimalist", "formal", "casual", "skirt", "navy", "midi", "pleated"],
         stock: 10
     },
