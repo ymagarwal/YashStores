@@ -295,8 +295,8 @@ app.post('/api/submit', submitLimiter, async (req, res) => {
 // Chat endpoint with AI product recommendations
 app.post('/api/chat', chatLimiter, async (req, res) => {
     try {
-        const { message } = req.body;
-        
+        const { message, history = [] } = req.body;
+
         if (!message || typeof message !== 'string' || message.trim().length === 0) {
             return res.status(400).json({ error: 'Message is required' });
         }
@@ -304,6 +304,14 @@ app.post('/api/chat', chatLimiter, async (req, res) => {
         if (message.length > 500) {
             return res.status(400).json({ error: 'Message too long (max 500 characters)' });
         }
+
+        // Validate history: must be array of {role, content} objects, max 6 entries
+        const safeHistory = Array.isArray(history)
+            ? history.slice(-6).filter(m =>
+                ['user', 'assistant'].includes(m.role) &&
+                typeof m.content === 'string'
+              ).map(m => ({ role: m.role, content: m.content.slice(0, 500) }))
+            : [];
 
         // Fetch all products
         const products = await Product.find().lean();
@@ -334,6 +342,7 @@ ${JSON.stringify(productIndex, null, 2)}
 
 Instructions:
 - Analyze the user's query for style preferences, budget, category, and any specific requirements
+- Use conversation history to understand follow-up queries (e.g. "show cheaper ones", "in a different colour")
 - Match products from the catalog based on tags, description, price, and category
 - Return your top 5 recommendations (or fewer if limited matches)
 - If no products match well, respond with "NO_RESULTS" and explain why
@@ -360,6 +369,7 @@ Rules:
 - Match style tags when mentioned (minimalist, vintage, casual, formal)
 - Be concise and helpful`
                 },
+                ...safeHistory,
                 {
                     role: 'user',
                     content: message
