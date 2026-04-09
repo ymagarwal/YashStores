@@ -1489,7 +1489,7 @@
                         `).join('')}
                     `;
                 } else {
-                    aiMsg.textContent = data.message;
+                    aiMsg.textContent = data.message || data.error || 'Sorry, something went wrong. Please try again.';
                 }
 
                 chatMessages.appendChild(aiMsg);
