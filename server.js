@@ -46,8 +46,21 @@ const merchantSchema = new mongoose.Schema({
     submittedAt:  { type: Date, default: Date.now }
 });
 
+const productSchema = new mongoose.Schema({
+    name: { type: String, required: true },
+    description: { type: String, required: true },
+    category: { type: String, required: true }, // clothing, accessories, footwear, jewelry
+    price: { type: Number, required: true },
+    merchant: { type: String, required: true },
+    images: [String],
+    tags: [String],
+    stock: { type: Number, default: 10 },
+    created_at: { type: Date, default: Date.now }
+});
+
 const Customer = mongoose.model('Customer', customerSchema);
 const Merchant = mongoose.model('Merchant', merchantSchema);
+const Product = mongoose.model('Product', productSchema);
 
 // --- Middleware ---
 
@@ -90,6 +103,15 @@ const submitLimiter = rateLimit({
     standardHeaders: true,
     legacyHeaders: false,
     message: { error: 'Too many submissions. Please try again in 15 minutes.' }
+});
+
+// Rate limiting - chat: 10 requests per 15 min per IP
+const chatLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 10,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Too many chat requests. Please try again in 15 minutes.' }
 });
 
 // Serve static files
@@ -270,6 +292,106 @@ app.post('/api/submit', submitLimiter, async (req, res) => {
     }
 });
 
+// Chat endpoint with AI product recommendations
+app.post('/api/chat', chatLimiter, async (req, res) => {
+    try {
+        const { message } = req.body;
+        
+        if (!message || typeof message !== 'string' || message.trim().length === 0) {
+            return res.status(400).json({ error: 'Message is required' });
+        }
+
+        if (message.length > 500) {
+            return res.status(400).json({ error: 'Message too long (max 500 characters)' });
+        }
+
+        // Fetch all products
+        const products = await Product.find().lean();
+        
+        // Build product index for LLM
+        const productIndex = products.map(p => ({
+            name: p.name,
+            description: p.description,
+            category: p.category,
+            price: p.price,
+            merchant: p.merchant,
+            tags: p.tags.join(', '),
+            in_stock: p.stock > 0
+        }));
+
+        // Call Groq
+        const Groq = require('groq-sdk');
+        const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+
+        const completion = await groq.chat.completions.create({
+            messages: [
+                {
+                    role: 'system',
+                    content: `You are a fashion shopping assistant for SnapShop. Your job is to recommend products based on user queries.
+
+Product catalog:
+${JSON.stringify(productIndex, null, 2)}
+
+Instructions:
+- Analyze the user's query for style preferences, budget, category, and any specific requirements
+- Match products from the catalog based on tags, description, price, and category
+- Return your top 5 recommendations (or fewer if limited matches)
+- If no products match well, respond with "NO_RESULTS" and explain why
+- Format response as JSON:
+
+For matches:
+{
+  "has_results": true,
+  "message": "brief natural language intro",
+  "products": [
+    { "name": "...", "reason": "1-sentence why it matches", "price": number }
+  ]
+}
+
+For no matches:
+{
+  "has_results": false,
+  "message": "explanation of why no matches + what categories you do have"
+}
+
+Rules:
+- Only recommend products with in_stock: true
+- Respect budget if mentioned (e.g., "under £200" means price <= 200)
+- Match style tags when mentioned (minimalist, vintage, casual, formal)
+- Be concise and helpful`
+                },
+                {
+                    role: 'user',
+                    content: message
+                }
+            ],
+            model: 'llama-3.1-70b-versatile',
+            temperature: 0.7,
+            max_tokens: 1000
+        });
+
+        const aiResponse = completion.choices[0].message.content;
+        
+        // Parse JSON response from LLM
+        let parsedResponse;
+        try {
+            parsedResponse = JSON.parse(aiResponse);
+        } catch (e) {
+            // Fallback if LLM doesn't return valid JSON
+            parsedResponse = {
+                has_results: false,
+                message: aiResponse
+            };
+        }
+
+        res.json(parsedResponse);
+
+    } catch (error) {
+        console.error('Chat error:', error);
+        res.status(500).json({ error: 'Failed to process chat request' });
+    }
+});
+
 // Admin login - verify password
 app.post('/api/admin/login', (req, res) => {
     const { password } = req.body;
@@ -371,6 +493,7 @@ async function startServer() {
 
   Endpoints:
     POST   /api/submit         (rate limited: 5/15min)
+    POST   /api/chat           (rate limited: 10/15min) ← NEW
     POST   /api/admin/login    (admin auth)
     GET    /api/customers      (admin only)
     GET    /api/merchants      (admin only)
