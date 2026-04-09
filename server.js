@@ -457,6 +457,89 @@ app.delete('/api/merchants/:id', requireAdmin, async (req, res) => {
     }
 });
 
+// Get all products (public)
+app.get('/api/products', async (req, res) => {
+    try {
+        const products = await Product.find().sort({ created_at: -1 }).lean();
+        res.json(products);
+    } catch (error) {
+        console.error('Error fetching products:', error.message);
+        res.status(500).json({ error: 'Failed to fetch products' });
+    }
+});
+
+// Get site stats (public)
+app.get('/api/stats', async (req, res) => {
+    try {
+        const [customers, merchants, products] = await Promise.all([
+            Customer.countDocuments(),
+            Merchant.countDocuments(),
+            Product.countDocuments()
+        ]);
+        res.json({ customers, merchants, products });
+    } catch (error) {
+        console.error('Error fetching stats:', error.message);
+        res.status(500).json({ error: 'Failed to fetch stats' });
+    }
+});
+
+// Create product (admin only)
+app.post('/api/products', requireAdmin, async (req, res) => {
+    try {
+        const { name, description, category, price, merchant, tags, stock } = req.body;
+        if (!name || !description || !category || !price || !merchant) {
+            return res.status(400).json({ error: 'name, description, category, price, and merchant are required' });
+        }
+        const product = await Product.create({
+            name: sanitizeString(name),
+            description: sanitizeString(description),
+            category: sanitizeString(category),
+            price: Number(price),
+            merchant: sanitizeString(merchant),
+            tags: Array.isArray(tags) ? tags.map(t => sanitizeString(t)) : [],
+            stock: stock !== undefined ? Number(stock) : 10
+        });
+        res.status(201).json(product);
+    } catch (error) {
+        console.error('Error creating product:', error.message);
+        res.status(500).json({ error: 'Failed to create product' });
+    }
+});
+
+// Update product (admin only)
+app.put('/api/products/:id', requireAdmin, async (req, res) => {
+    try {
+        const { name, description, category, price, merchant, tags, stock } = req.body;
+        const update = {};
+        if (name !== undefined) update.name = sanitizeString(name);
+        if (description !== undefined) update.description = sanitizeString(description);
+        if (category !== undefined) update.category = sanitizeString(category);
+        if (price !== undefined) update.price = Number(price);
+        if (merchant !== undefined) update.merchant = sanitizeString(merchant);
+        if (tags !== undefined) update.tags = Array.isArray(tags) ? tags.map(t => sanitizeString(t)) : [];
+        if (stock !== undefined) update.stock = Number(stock);
+
+        const product = await Product.findByIdAndUpdate(req.params.id, update, { new: true });
+        if (!product) return res.status(404).json({ error: 'Product not found' });
+        res.json(product);
+    } catch (error) {
+        console.error('Error updating product:', error.message);
+        res.status(500).json({ error: 'Failed to update product' });
+    }
+});
+
+// Delete product (admin only)
+app.delete('/api/products/:id', requireAdmin, async (req, res) => {
+    try {
+        const result = await Product.findByIdAndDelete(req.params.id);
+        if (!result) return res.status(404).json({ error: 'Product not found' });
+        res.json({ success: true, message: 'Product deleted' });
+    } catch (error) {
+        console.error('Error deleting product:', error.message);
+        res.status(500).json({ error: 'Failed to delete product' });
+    }
+});
+
 // Health check
 app.get('/api/health', (req, res) => {
     res.json({
@@ -503,7 +586,12 @@ async function startServer() {
 
   Endpoints:
     POST   /api/submit         (rate limited: 5/15min)
-    POST   /api/chat           (rate limited: 10/15min) ← NEW
+    POST   /api/chat           (rate limited: 10/15min)
+    GET    /api/products        (public)
+    GET    /api/stats           (public)
+    POST   /api/products        (admin only)
+    PUT    /api/products/:id    (admin only)
+    DELETE /api/products/:id    (admin only)
     POST   /api/admin/login    (admin auth)
     GET    /api/customers      (admin only)
     GET    /api/merchants      (admin only)

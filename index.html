@@ -511,6 +511,9 @@
             font-size: 0.9rem;
             font-weight: 300;
             letter-spacing: 0.02em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         
         .chat-body {
@@ -702,7 +705,256 @@
             font-weight: 300;
             color: var(--accent-warm);
         }
-        
+
+        /* Wishlist button on product cards */
+        .wishlist-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            line-height: 1;
+            padding: 0.2rem;
+            color: var(--warm-gray);
+            transition: var(--transition);
+        }
+        .wishlist-btn:hover,
+        .wishlist-btn.wishlisted { color: #C0605A; }
+
+        /* Wishlist badge in nav */
+        .nav-wishlist {
+            position: relative;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: var(--charcoal);
+            font-weight: 400;
+            background: none;
+            border: none;
+            font-family: var(--font-body);
+            padding: 0;
+            letter-spacing: 0.02em;
+            transition: var(--transition);
+        }
+        .nav-wishlist:hover { color: var(--soft-black); }
+        .wishlist-count {
+            display: none;
+            position: absolute;
+            top: -6px;
+            right: -10px;
+            background: var(--soft-black);
+            color: white;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            font-size: 0.6rem;
+            font-weight: 600;
+            align-items: center;
+            justify-content: center;
+        }
+        .wishlist-count.visible { display: flex; }
+
+        /* Products loading + empty */
+        .products-loading {
+            display: flex;
+            justify-content: center;
+            padding: 5rem 0;
+        }
+        .products-spinner {
+            width: 36px;
+            height: 36px;
+            border: 2px solid var(--medium-gray);
+            border-top-color: var(--soft-black);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .products-empty {
+            text-align: center;
+            padding: 4rem;
+            color: var(--charcoal);
+            font-weight: 300;
+        }
+
+        /* Chat clear button */
+        .chat-clear-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 0.75rem;
+            color: #999;
+            font-family: var(--font-body);
+            padding: 0.25rem 0.5rem;
+            transition: color 0.2s;
+        }
+        .chat-clear-btn:hover { color: var(--charcoal); }
+
+        /* Typing indicator */
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+            padding: 0.4rem 0.2rem;
+        }
+        .typing-indicator span {
+            width: 7px;
+            height: 7px;
+            background: var(--warm-gray);
+            border-radius: 50%;
+            animation: typingBounce 1.2s infinite;
+        }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typingBounce {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-6px); }
+        }
+
+        /* Chat product image */
+        .product-rec-image {
+            width: 100%;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Product detail modal */
+        .product-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.45);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            padding: 1rem;
+        }
+        .product-modal-overlay.open {
+            opacity: 1;
+            pointer-events: all;
+        }
+        .product-modal {
+            background: var(--pure-white);
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+        .product-modal-overlay.open .product-modal { transform: translateY(0); }
+        .product-modal-img {
+            width: 100%;
+            height: 100%;
+            min-height: 400px;
+            object-fit: cover;
+        }
+        .product-modal-img-placeholder {
+            width: 100%;
+            min-height: 400px;
+            background: var(--light-gray);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+        }
+        .product-modal-body {
+            padding: 2.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .product-modal-close {
+            align-self: flex-end;
+            background: none;
+            border: none;
+            font-size: 1.4rem;
+            cursor: pointer;
+            color: var(--charcoal);
+            line-height: 1;
+            margin-bottom: -0.5rem;
+        }
+        .product-modal-category {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--accent-warm);
+            font-weight: 500;
+        }
+        .product-modal-name {
+            font-family: var(--font-display);
+            font-size: 1.75rem;
+            font-weight: 400;
+            line-height: 1.2;
+            color: var(--soft-black);
+        }
+        .product-modal-merchant {
+            font-size: 0.9rem;
+            color: var(--charcoal);
+            font-weight: 300;
+        }
+        .product-modal-price {
+            font-size: 1.5rem;
+            font-weight: 400;
+            color: var(--soft-black);
+        }
+        .product-modal-desc {
+            font-size: 0.9rem;
+            line-height: 1.7;
+            color: var(--charcoal);
+            font-weight: 300;
+        }
+        .product-modal-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+        }
+        .product-tag {
+            font-size: 0.75rem;
+            padding: 0.2rem 0.65rem;
+            border: 1px solid var(--medium-gray);
+            color: var(--charcoal);
+            font-weight: 300;
+            border-radius: 2px;
+        }
+        .product-modal-stock {
+            font-size: 0.82rem;
+            color: #5a9a6f;
+            font-weight: 400;
+        }
+        .product-modal-stock.low { color: #c07a3a; }
+        .product-modal-wishlist-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--soft-black);
+            color: white;
+            border: none;
+            padding: 0.85rem 1.5rem;
+            cursor: pointer;
+            font-family: var(--font-body);
+            font-size: 0.9rem;
+            font-weight: 400;
+            letter-spacing: 0.04em;
+            transition: var(--transition);
+            margin-top: auto;
+        }
+        .product-modal-wishlist-btn:hover { background: var(--charcoal); }
+        .product-modal-wishlist-btn.wishlisted {
+            background: white;
+            color: #C0605A;
+            border: 1px solid #C0605A;
+        }
+
+        @media (max-width: 600px) {
+            .product-modal { grid-template-columns: 1fr; }
+            .product-modal-img, .product-modal-img-placeholder { min-height: 220px; }
+        }
+
         /* Contact Section */
         .contact-section {
             padding: 8rem 4rem;
@@ -963,6 +1215,10 @@
                 <a href="#products">Products</a>
                 <a href="#contact">Join Us</a>
             </div>
+            <button class="nav-wishlist" onclick="openWishlistModal()" title="Your Wishlist">
+                ♡ Wishlist
+                <span class="wishlist-count" id="nav-wishlist-count">0</span>
+            </button>
             <button class="cta-button" onclick="document.getElementById('contact').scrollIntoView({behavior: 'smooth'})">
                 Get Started
             </button>
@@ -997,7 +1253,7 @@
                         <div class="stat-label">Match Accuracy</div>
                     </div>
                     <div class="stat-item">
-                        <div class="stat-number">1000+</div>
+                        <div class="stat-number" id="hero-product-count">—</div>
                         <div class="stat-label">Unique Products</div>
                     </div>
                 </div>
@@ -1097,7 +1353,8 @@
             
             <div class="chat-demo">
                 <div class="chat-header">
-                    AI Shopping Assistant
+                    <span>AI Shopping Assistant</span>
+                    <button class="chat-clear-btn" onclick="clearChat()" title="Clear conversation">Clear</button>
                 </div>
                 <div class="chat-body" id="chat-messages">
                     <div class="message ai-message">
@@ -1124,85 +1381,22 @@
             <p class="section-subtitle">Filter and find exactly what you need with our intelligent search</p>
         </div>
         
-        <div class="filter-bar">
-            <button class="filter-btn active">All Products</button>
-            <button class="filter-btn">Outerwear</button>
-            <button class="filter-btn">Dresses</button>
-            <button class="filter-btn">Accessories</button>
+        <div class="filter-bar" id="filter-bar">
+            <button class="filter-btn active" data-filter="all">All Products</button>
+            <button class="filter-btn" data-filter="clothing">Clothing</button>
+            <button class="filter-btn" data-filter="accessories">Accessories</button>
+            <button class="filter-btn" data-filter="footwear">Footwear</button>
+            <button class="filter-btn" data-filter="jewelry">Jewelry</button>
         </div>
-        
-        <div class="products-grid">
-            <div class="product-card">
-                <img src="images/blazer-cream.jpeg" alt="Linen Blazer" class="product-image">
-                <div class="product-info">
-                    <div class="product-name">Structured Linen Blazer</div>
-                    <div class="product-merchant">Tailored Elegance</div>
-                    <div class="product-footer">
-                        <div class="product-price">£185</div>
-                        <div class="product-match">98% match</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="product-card">
-                <img src="images/necklace-gold.jpeg" alt="Layered Necklace" class="product-image">
-                <div class="product-info">
-                    <div class="product-name">Layered Gold Necklace</div>
-                    <div class="product-merchant">Fine Jewelry Co</div>
-                    <div class="product-footer">
-                        <div class="product-price">£145</div>
-                        <div class="product-match">97% match</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="product-card">
-                <img src="images/coat-black.jpeg" alt="Long Coat" class="product-image">
-                <div class="product-info">
-                    <div class="product-name">Double-Breasted Coat</div>
-                    <div class="product-merchant">Winter Essentials</div>
-                    <div class="product-footer">
-                        <div class="product-price">£295</div>
-                        <div class="product-match">96% match</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="product-card">
-                <img src="images/dress-silk.jpeg" alt="Silk Dress" class="product-image">
-                <div class="product-info">
-                    <div class="product-name">Silk Slip Dress</div>
-                    <div class="product-merchant">Elegant Threads</div>
-                    <div class="product-footer">
-                        <div class="product-price">£215</div>
-                        <div class="product-match">95% match</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="product-card">
-                <img src="images/sweater-beige.jpeg" alt="Cashmere Sweater" class="product-image">
-                <div class="product-info">
-                    <div class="product-name">Cashmere Crewneck</div>
-                    <div class="product-merchant">Nordic Knits</div>
-                    <div class="product-footer">
-                        <div class="product-price">£165</div>
-                        <div class="product-match">94% match</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="product-card">
-                <img src="images/bag-leather.jpeg" alt="Leather Tote" class="product-image">
-                <div class="product-info">
-                    <div class="product-name">Leather Tote Bag</div>
-                    <div class="product-merchant">Luxury Leather Co</div>
-                    <div class="product-footer">
-                        <div class="product-price">£425</div>
-                        <div class="product-match">93% match</div>
-                    </div>
-                </div>
-            </div>
+
+        <div id="products-loading" class="products-loading">
+            <div class="products-spinner"></div>
+        </div>
+
+        <div class="products-grid" id="products-grid"></div>
+
+        <div id="products-empty" class="products-empty" style="display:none;">
+            No products found in this category.
         </div>
     </section>
 
@@ -1411,44 +1605,244 @@
             );
         });
 
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
+        // ── Helpers ──────────────────────────────────────────────
+        function escapeHTML(str) {
+            const div = document.createElement('div');
+            div.textContent = str || '';
+            return div.innerHTML;
+        }
 
-                const filter = btn.textContent.trim().toLowerCase();
-                const cards = document.querySelectorAll('.product-card');
+        const API_BASE = 'https://yashstores.onrender.com/api';
 
-                const categoryMap = {
-                    'outerwear': ['blazer', 'coat'],
-                    'dresses': ['dress'],
-                    'accessories': ['necklace', 'bag', 'tote']
-                };
+        // ── Stats ─────────────────────────────────────────────────
+        async function loadStats() {
+            try {
+                const res = await fetch(`${API_BASE}/stats`);
+                const data = await res.json();
+                const el = document.getElementById('hero-product-count');
+                if (el && data.products !== undefined) el.textContent = data.products + '+';
+            } catch (_) {}
+        }
 
-                cards.forEach(card => {
-                    if (filter === 'all products') {
-                        card.style.display = '';
-                        return;
-                    }
-                    const name = card.querySelector('.product-name').textContent.toLowerCase();
-                    const keywords = categoryMap[filter] || [];
-                    const match = keywords.some(kw => name.includes(kw));
-                    card.style.display = match ? '' : 'none';
-                });
-            });
+        // ── Products ──────────────────────────────────────────────
+        let allProducts = [];
+        let activeFilter = 'all';
+
+        async function loadProducts() {
+            try {
+                const res = await fetch(`${API_BASE}/products`);
+                allProducts = await res.json();
+                document.getElementById('products-loading').style.display = 'none';
+                renderProducts();
+            } catch (_) {
+                document.getElementById('products-loading').style.display = 'none';
+                document.getElementById('products-empty').style.display = 'block';
+                document.getElementById('products-empty').textContent = 'Could not load products. Please try again later.';
+            }
+        }
+
+        function renderProducts() {
+            const grid = document.getElementById('products-grid');
+            const empty = document.getElementById('products-empty');
+            const filtered = activeFilter === 'all'
+                ? allProducts
+                : allProducts.filter(p => p.category === activeFilter);
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '';
+                empty.style.display = 'block';
+                return;
+            }
+            empty.style.display = 'none';
+            grid.innerHTML = filtered.map(p => buildProductCard(p)).join('');
+        }
+
+        function buildProductCard(p) {
+            const img = p.images && p.images.length
+                ? `<img src="${escapeHTML(p.images[0])}" alt="${escapeHTML(p.name)}" class="product-image" loading="lazy">`
+                : `<div class="product-image" style="background:var(--light-gray);display:flex;align-items:center;justify-content:center;font-size:2rem;">👗</div>`;
+            const wishlisted = isWishlisted(p._id);
+            return `
+                <div class="product-card" data-id="${escapeHTML(p._id)}" onclick="openProductModal('${escapeHTML(p._id)}')">
+                    ${img}
+                    <div class="product-info">
+                        <div class="product-name">${escapeHTML(p.name)}</div>
+                        <div class="product-merchant">${escapeHTML(p.merchant)}</div>
+                        <div class="product-footer">
+                            <div class="product-price">£${p.price}</div>
+                            <button class="wishlist-btn ${wishlisted ? 'wishlisted' : ''}"
+                                title="${wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}"
+                                onclick="event.stopPropagation(); toggleWishlist('${escapeHTML(p._id)}')"
+                            >${wishlisted ? '♥' : '♡'}</button>
+                        </div>
+                    </div>
+                </div>`;
+        }
+
+        document.getElementById('filter-bar').addEventListener('click', (e) => {
+            const btn = e.target.closest('.filter-btn');
+            if (!btn) return;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            activeFilter = btn.dataset.filter;
+            renderProducts();
         });
 
-        // Chat functionality
+        // ── Wishlist ──────────────────────────────────────────────
+        function getWishlist() {
+            try { return JSON.parse(localStorage.getItem('snapshop_wishlist') || '[]'); }
+            catch (_) { return []; }
+        }
+
+        function saveWishlist(list) {
+            localStorage.setItem('snapshop_wishlist', JSON.stringify(list));
+            updateWishlistBadge();
+        }
+
+        function isWishlisted(id) { return getWishlist().includes(id); }
+
+        function toggleWishlist(id) {
+            let list = getWishlist();
+            if (list.includes(id)) {
+                list = list.filter(x => x !== id);
+            } else {
+                list.push(id);
+            }
+            saveWishlist(list);
+            // refresh card button state without full re-render
+            document.querySelectorAll(`.product-card[data-id="${id}"] .wishlist-btn`).forEach(btn => {
+                const w = list.includes(id);
+                btn.textContent = w ? '♥' : '♡';
+                btn.classList.toggle('wishlisted', w);
+                btn.title = w ? 'Remove from wishlist' : 'Add to wishlist';
+            });
+        }
+
+        function updateWishlistBadge() {
+            const count = getWishlist().length;
+            const badge = document.getElementById('nav-wishlist-count');
+            badge.textContent = count;
+            badge.classList.toggle('visible', count > 0);
+        }
+
+        function openWishlistModal() {
+            const list = getWishlist();
+            const content = document.getElementById('wishlist-content');
+            if (list.length === 0) {
+                content.innerHTML = '<p style="color:var(--charcoal);font-weight:300;text-align:center;padding:2rem 0;">Your wishlist is empty.<br>Click ♡ on any product to save it.</p>';
+            } else {
+                const items = list.map(id => {
+                    const p = allProducts.find(x => x._id === id);
+                    if (!p) return '';
+                    const img = p.images && p.images.length
+                        ? `<img src="${escapeHTML(p.images[0])}" style="width:60px;height:80px;object-fit:cover;flex-shrink:0;">`
+                        : `<div style="width:60px;height:80px;background:var(--light-gray);display:flex;align-items:center;justify-content:center;flex-shrink:0;">👗</div>`;
+                    return `
+                        <div style="display:flex;gap:1rem;align-items:center;padding:0.75rem 0;border-bottom:1px solid var(--medium-gray);">
+                            ${img}
+                            <div style="flex:1;cursor:pointer;" onclick="closeWishlistModal();openProductModal('${escapeHTML(p._id)}')">
+                                <div style="font-weight:400;">${escapeHTML(p.name)}</div>
+                                <div style="font-size:0.82rem;color:var(--charcoal);font-weight:300;">${escapeHTML(p.merchant)}</div>
+                                <div style="font-size:1rem;margin-top:0.25rem;">£${p.price}</div>
+                            </div>
+                            <button onclick="toggleWishlist('${escapeHTML(p._id)}');openWishlistModal();" style="background:none;border:none;cursor:pointer;color:#C0605A;font-size:1.2rem;" title="Remove">♥</button>
+                        </div>`;
+                }).join('');
+                content.innerHTML = items || '<p style="color:var(--charcoal);font-weight:300;">Some saved items are no longer available.</p>';
+            }
+            document.getElementById('wishlist-modal-overlay').classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeWishlistModal() {
+            document.getElementById('wishlist-modal-overlay').classList.remove('open');
+            document.body.style.overflow = '';
+        }
+
+        function handleWishlistOverlayClick(e) {
+            if (e.target === document.getElementById('wishlist-modal-overlay')) closeWishlistModal();
+        }
+
+        // ── Product Modal ─────────────────────────────────────────
+        let currentModalProductId = null;
+
+        function openProductModal(id) {
+            const p = allProducts.find(x => x._id === id);
+            if (!p) return;
+            currentModalProductId = id;
+
+            const imgContainer = document.getElementById('product-modal-image-container');
+            if (p.images && p.images.length) {
+                imgContainer.innerHTML = `<img src="${escapeHTML(p.images[0])}" alt="${escapeHTML(p.name)}" class="product-modal-img">`;
+            } else {
+                imgContainer.innerHTML = `<div class="product-modal-img-placeholder">👗</div>`;
+            }
+
+            document.getElementById('modal-category').textContent = p.category;
+            document.getElementById('modal-name').textContent = p.name;
+            document.getElementById('modal-merchant').textContent = 'by ' + p.merchant;
+            document.getElementById('modal-price').textContent = '£' + p.price;
+            document.getElementById('modal-desc').textContent = p.description;
+
+            const tagsEl = document.getElementById('modal-tags');
+            tagsEl.innerHTML = (p.tags || []).map(t => `<span class="product-tag">${escapeHTML(t)}</span>`).join('');
+
+            const stockEl = document.getElementById('modal-stock');
+            if (p.stock > 5) {
+                stockEl.textContent = 'In stock';
+                stockEl.className = 'product-modal-stock';
+            } else if (p.stock > 0) {
+                stockEl.textContent = `Only ${p.stock} left`;
+                stockEl.className = 'product-modal-stock low';
+            } else {
+                stockEl.textContent = 'Out of stock';
+                stockEl.className = 'product-modal-stock low';
+            }
+
+            updateModalWishlistBtn(id);
+            document.getElementById('product-modal-overlay').classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function updateModalWishlistBtn(id) {
+            const wishlisted = isWishlisted(id);
+            const btn = document.getElementById('modal-wishlist-btn');
+            const icon = document.getElementById('modal-wishlist-icon');
+            btn.classList.toggle('wishlisted', wishlisted);
+            icon.textContent = wishlisted ? '♥' : '♡';
+            btn.childNodes[btn.childNodes.length - 1].textContent = wishlisted ? ' Remove from Wishlist' : ' Save to Wishlist';
+        }
+
+        function toggleWishlistFromModal() {
+            if (!currentModalProductId) return;
+            toggleWishlist(currentModalProductId);
+            updateModalWishlistBtn(currentModalProductId);
+        }
+
+        function closeProductModal() {
+            document.getElementById('product-modal-overlay').classList.remove('open');
+            document.body.style.overflow = '';
+            currentModalProductId = null;
+        }
+
+        function handleModalOverlayClick(e) {
+            if (e.target === document.getElementById('product-modal-overlay')) closeProductModal();
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') { closeProductModal(); closeWishlistModal(); }
+        });
+
+        // ── Chat ──────────────────────────────────────────────────
         const chatInput = document.getElementById('chat-input');
         const chatSend = document.getElementById('chat-send');
         const chatMessages = document.getElementById('chat-messages');
-        const MAX_HISTORY = 6; // keep last 3 exchanges (user + assistant pairs)
+        const MAX_HISTORY = 6;
         let conversationHistory = [];
 
-        function escapeHTML(str) {
-            const div = document.createElement('div');
-            div.textContent = str;
-            return div.innerHTML;
+        function clearChat() {
+            conversationHistory = [];
+            chatMessages.innerHTML = `<div class="message ai-message">Hi! I'm your SnapShop assistant. Tell me what you're looking for and I'll help you find the perfect match.</div>`;
         }
 
         async function sendMessage() {
@@ -1457,24 +1851,31 @@
 
             chatInput.disabled = true;
             chatSend.disabled = true;
-            chatSend.textContent = 'Thinking...';
+            chatSend.textContent = 'Send';
 
             const userMsg = document.createElement('div');
             userMsg.className = 'message user-message';
             userMsg.textContent = message;
             chatMessages.appendChild(userMsg);
             chatInput.value = '';
+            chatMessages.scrollTop = chatMessages.scrollHeight;
 
+            // Typing indicator
+            const typingMsg = document.createElement('div');
+            typingMsg.className = 'message ai-message';
+            typingMsg.innerHTML = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
+            chatMessages.appendChild(typingMsg);
             chatMessages.scrollTop = chatMessages.scrollHeight;
 
             try {
-                const response = await fetch('https://yashstores.onrender.com/api/chat', {
+                const response = await fetch(`${API_BASE}/chat`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ message, history: conversationHistory })
                 });
 
                 const data = await response.json();
+                typingMsg.remove();
 
                 const aiMsg = document.createElement('div');
                 aiMsg.className = 'message ai-message';
@@ -1482,22 +1883,27 @@
                 let aiText;
                 if (data.has_results) {
                     aiText = data.message;
-                    aiMsg.innerHTML = `
-                        <p>${escapeHTML(data.message)}</p>
-                        ${data.products.map(p => `
-                            <div class="product-recommendation">
+                    aiMsg.innerHTML = `<p style="margin-bottom:0.75rem;">${escapeHTML(data.message)}</p>` +
+                        data.products.map(p => {
+                            const product = allProducts.find(x => x.name === p.name);
+                            const imgHtml = product && product.images && product.images.length
+                                ? `<img src="${escapeHTML(product.images[0])}" alt="${escapeHTML(p.name)}" class="product-rec-image">`
+                                : '';
+                            const clickAttr = product
+                                ? `onclick="openProductModal('${escapeHTML(product._id)}')" style="cursor:pointer;"`
+                                : '';
+                            return `<div class="product-recommendation" ${clickAttr}>
+                                ${imgHtml}
                                 <h4>${escapeHTML(p.name)}</h4>
                                 <p>${escapeHTML(p.reason)}</p>
                                 <div class="product-price">£${p.price}</div>
-                            </div>
-                        `).join('')}
-                    `;
+                            </div>`;
+                        }).join('');
                 } else {
                     aiText = data.message || data.error || 'Sorry, something went wrong. Please try again.';
                     aiMsg.textContent = aiText;
                 }
 
-                // Update history with this exchange, then trim to last MAX_HISTORY messages
                 conversationHistory.push({ role: 'user', content: message });
                 conversationHistory.push({ role: 'assistant', content: aiText });
                 if (conversationHistory.length > MAX_HISTORY) {
@@ -1507,7 +1913,8 @@
                 chatMessages.appendChild(aiMsg);
                 chatMessages.scrollTop = chatMessages.scrollHeight;
 
-            } catch (error) {
+            } catch (_) {
+                typingMsg.remove();
                 const errorMsg = document.createElement('div');
                 errorMsg.className = 'message ai-message';
                 errorMsg.textContent = 'Sorry, I encountered an error. Please try again.';
@@ -1515,15 +1922,51 @@
             } finally {
                 chatInput.disabled = false;
                 chatSend.disabled = false;
-                chatSend.textContent = 'Send';
                 chatInput.focus();
             }
         }
 
         chatSend.addEventListener('click', sendMessage);
-        chatInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') sendMessage();
-        });
+        chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+
+        // ── Init ──────────────────────────────────────────────────
+        loadStats();
+        loadProducts();
+        updateWishlistBadge();
     </script>
+
+    <!-- Product Detail Modal -->
+    <div class="product-modal-overlay" id="product-modal-overlay" onclick="handleModalOverlayClick(event)">
+        <div class="product-modal" id="product-modal">
+            <div id="product-modal-image-container"></div>
+            <div class="product-modal-body">
+                <button class="product-modal-close" onclick="closeProductModal()">&#x2715;</button>
+                <div class="product-modal-category" id="modal-category"></div>
+                <div class="product-modal-name" id="modal-name"></div>
+                <div class="product-modal-merchant" id="modal-merchant"></div>
+                <div class="product-modal-price" id="modal-price"></div>
+                <div class="product-modal-desc" id="modal-desc"></div>
+                <div class="product-modal-tags" id="modal-tags"></div>
+                <div class="product-modal-stock" id="modal-stock"></div>
+                <button class="product-modal-wishlist-btn" id="modal-wishlist-btn" onclick="toggleWishlistFromModal()">
+                    <span id="modal-wishlist-icon">♡</span> Save to Wishlist
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Wishlist Modal -->
+    <div class="product-modal-overlay" id="wishlist-modal-overlay" onclick="handleWishlistOverlayClick(event)">
+        <div class="product-modal" id="wishlist-modal" style="grid-template-columns:1fr; max-width:600px;">
+            <div class="product-modal-body" style="gap:1.25rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div class="product-modal-name" style="font-size:1.4rem;">Your Wishlist</div>
+                    <button class="product-modal-close" onclick="closeWishlistModal()">&#x2715;</button>
+                </div>
+                <div id="wishlist-content"></div>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>
